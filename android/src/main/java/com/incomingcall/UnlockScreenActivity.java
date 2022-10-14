@@ -1,8 +1,7 @@
 package com.incomingcall;
-
 import android.app.KeyguardManager;
-import android.content.Intent;
 import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
@@ -15,9 +14,6 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.provider.Settings;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import android.app.Activity;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,35 +29,38 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.squareup.picasso.Picasso;
 
+
+import android.media.AudioManager;
+
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
 
     private static final String TAG = "MessagingService";
     private TextView tvName;
     private TextView tvInfo;
     private ImageView ivAvatar;
-    private Integer timeout = 0;
     private String uuid = "";
     static boolean active = false;
     private static Vibrator v = (Vibrator) IncomingCallModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
     private long[] pattern = {0, 1000, 800};
     private static MediaPlayer player = MediaPlayer.create(IncomingCallModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
     private static Activity fa;
-    private Timer timer;
+
+    private boolean checkIfCalling(Context context){
+        // TelecomManager tm = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
+        // return tm.isInCall(); 
+           AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+            if(manager.getMode()==AudioManager.MODE_IN_CALL){
+                    return true;
+            }
+            else{
+                return false;
+            }
+    }
 
 
     @Override
     public void onStart() {
         super.onStart();
-        if (this.timeout > 0) {
-              this.timer = new Timer();
-              this.timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    // this code will be executed after timeout seconds
-                    dismissIncoming();
-                }
-            }, timeout);
-        }
         active = true;
     }
 
@@ -102,10 +101,6 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                     Picasso.get().load(avatar).transform(new CircleTransform()).into(ivAvatar);
                 }
             }
-            if (bundle.containsKey("timeout")) {
-                this.timeout = bundle.getInt("timeout");
-            }
-            else this.timeout = 0;
         }
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
@@ -113,7 +108,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
         v.vibrate(pattern, 0);
         player.start();
-
+    
         AnimateImage acceptCallBtn = findViewById(R.id.ivAcceptCall);
         acceptCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,6 +138,11 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
         });
 
+        if(checkIfCalling(IncomingCallModule.reactContext)){
+            player.stop();
+        }
+
+
     }
 
     @Override
@@ -150,24 +150,21 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         // Dont back
     }
 
-    public void dismissIncoming() {
+    public static void dismissIncoming() {
         v.cancel();
         player.stop();
         player.prepareAsync();
-        dismissDialing();
+        fa.finish();
     }
 
     private void acceptDialing() {
         WritableMap params = Arguments.createMap();
         params.putBoolean("accept", true);
         params.putString("uuid", uuid);
-        if (timer != null){
-          timer.cancel();
-        }
         if (!IncomingCallModule.reactContext.hasCurrentActivity()) {
             params.putBoolean("isHeadless", true);
         }
-        KeyguardManager mKeyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+    KeyguardManager mKeyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 
         if (mKeyguardManager.isDeviceLocked()) {
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -181,6 +178,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         }
 
         sendEvent("answerCall", params);
+
         finish();
     }
 
@@ -188,9 +186,6 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         WritableMap params = Arguments.createMap();
         params.putBoolean("accept", false);
         params.putString("uuid", uuid);
-        if (timer != null) {
-          timer.cancel();
-        }
         if (!IncomingCallModule.reactContext.hasCurrentActivity()) {
             params.putBoolean("isHeadless", true);
         }
