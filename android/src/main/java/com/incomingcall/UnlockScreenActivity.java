@@ -49,7 +49,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         // TelecomManager tm = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
         // return tm.isInCall(); 
            AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-            if(manager.getMode()==AudioManager.MODE_IN_CALL){
+            if(manager.getMode()==AudioManager.MODE_IN_CALL || manager.getRingerMode()!=AudioManager.RINGER_MODE_NORMAL){
                     return true;
             }
             else{
