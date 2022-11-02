@@ -49,14 +49,32 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         // TelecomManager tm = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
         // return tm.isInCall(); 
            AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-            if(manager.getMode()==AudioManager.MODE_IN_CALL || manager.getRingerMode()!=AudioManager.RINGER_MODE_NORMAL){
-                    return true;
+            if(manager.getMode()==AudioManager.MODE_IN_CALL ){
+                return true;
             }
             else{
                 return false;
             }
     }
 
+    private boolean checkIfSilent(Context context){
+        AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+          if(manager.getRingerMode()==AudioManager.RINGER_MODE_SILENT){
+            return true;
+          }
+          else{
+            return false;
+          }
+    }
+    private boolean checkIfVibrator(Context context){
+        AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
+          if(manager.getRingerMode()==AudioManager.RINGER_MODE_VIBRATE){
+            return true;
+          }
+          else{
+            return false;
+          }
+    }
 
     @Override
     public void onStart() {
@@ -140,8 +158,15 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
         if(checkIfCalling(IncomingCallModule.reactContext)){
             player.stop();
+            v.cancel();
         }
-
+        if(checkIfSilent(IncomingCallModule.reactContext)){
+            player.stop();
+            v.cancel();
+        }
+        if(checkIfVibrator(IncomingCallModule.reactContext)){
+            player.stop();
+        }
 
     }
 
