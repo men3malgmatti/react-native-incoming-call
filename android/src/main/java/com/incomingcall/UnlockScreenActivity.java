@@ -16,6 +16,8 @@ import android.provider.Settings;
 import java.util.List;
 import android.app.Activity;
 
+import android.view.KeyEvent;
+
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
@@ -31,6 +33,7 @@ import com.squareup.picasso.Picasso;
 
 
 import android.media.AudioManager;
+
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
 
@@ -156,6 +159,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
         });
 
+
         if(checkIfCalling(IncomingCallModule.reactContext)){
             player.stop();
             v.cancel();
@@ -167,7 +171,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         if(checkIfVibrator(IncomingCallModule.reactContext)){
             player.stop();
         }
-
+        
+        
     }
 
     @Override
@@ -253,4 +258,30 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
     }
+
+                   
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        int action = event.getAction();
+        int keyCode = event.getKeyCode();
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_VOLUME_UP:
+                    if (action == KeyEvent.ACTION_UP) {
+                        v.cancel();
+                        player.stop();
+                        player.prepareAsync();
+                    }
+                    return true;
+                case KeyEvent.KEYCODE_VOLUME_DOWN:
+                    if (action == KeyEvent.ACTION_UP) {
+                        v.cancel();
+                        player.stop();
+                        player.prepareAsync();
+                    }
+                    return true;
+            default:
+                return super.dispatchKeyEvent(event);
+            }
+        }
+
 }
