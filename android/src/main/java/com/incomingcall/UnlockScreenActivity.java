@@ -34,12 +34,13 @@ import com.squareup.picasso.Picasso;
 
 import android.media.AudioManager;
 
-
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
 
     private static final String TAG = "MessagingService";
     private TextView tvName;
     private TextView tvInfo;
+    private TextView tvDecline;
+    private TextView tvAccept;
     private ImageView ivAvatar;
     private String uuid = "";
     static boolean active = false;
@@ -102,6 +103,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         tvName = findViewById(R.id.tvName);
         tvInfo = findViewById(R.id.tvInfo);
         ivAvatar = findViewById(R.id.ivAvatar);
+        tvDecline = findViewById(R.id.tvDecline);
+        tvAccept = findViewById(R.id.tvAccept);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
@@ -121,6 +124,14 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 if (avatar != null) {
                     Picasso.get().load(avatar).transform(new CircleTransform()).into(ivAvatar);
                 }
+            }
+            if (bundle.containsKey("decline")) {
+                String decline = bundle.getString("decline");
+                tvDecline.setText(decline);
+            }
+            if (bundle.containsKey("accept")) {
+                String accept = bundle.getString("accept");
+                tvAccept.setText(accept);
             }
         }
 
@@ -159,7 +170,6 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
         });
 
-
         if(checkIfCalling(IncomingCallModule.reactContext)){
             player.stop();
             v.cancel();
@@ -171,8 +181,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         if(checkIfVibrator(IncomingCallModule.reactContext)){
             player.stop();
         }
-        
-        
+
     }
 
     @Override
@@ -259,7 +268,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 .emit(eventName, params);
     }
 
-                   
+    
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int action = event.getAction();
