@@ -15,24 +15,20 @@ import android.media.MediaPlayer;
 import android.provider.Settings;
 import java.util.List;
 import android.app.Activity;
-
 import android.view.KeyEvent;
-
 import androidx.appcompat.app.AppCompatActivity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
-
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-
 import com.squareup.picasso.Picasso;
-
-
 import android.media.AudioManager;
+import android.media.RingtoneManager;
+import android.media.Ringtone;
 
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
 
@@ -46,12 +42,13 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
     static boolean active = false;
     private static Vibrator v = (Vibrator) IncomingCallModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
     private long[] pattern = {0, 1000, 800};
+    private static Ringtone ringtone = RingtoneManager.getRingtone(IncomingCallModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
+
     private static MediaPlayer player = MediaPlayer.create(IncomingCallModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
     private static Activity fa;
 
     private boolean checkIfCalling(Context context){
-        // TelecomManager tm = (TelecomManager) getSystemService(Context.TELECOM_SERVICE);
-        // return tm.isInCall(); 
+
            AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
             if(manager.getMode()==AudioManager.MODE_IN_CALL ){
                 return true;
@@ -64,15 +61,6 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
     private boolean checkIfSilent(Context context){
         AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
           if(manager.getRingerMode()==AudioManager.RINGER_MODE_SILENT){
-            return true;
-          }
-          else{
-            return false;
-          }
-    }
-    private boolean checkIfVibrator(Context context){
-        AudioManager manager = (AudioManager)context.getSystemService(Context.AUDIO_SERVICE);
-          if(manager.getRingerMode()==AudioManager.RINGER_MODE_VIBRATE){
             return true;
           }
           else{
@@ -138,8 +126,18 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
+
+        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        
+        try{
+            audioManager.setStreamVolume(AudioManager.STREAM_RING, audioManager.getStreamVolume(AudioManager.STREAM_RING), 0);
+            ringtone.setStreamType(AudioManager.STREAM_RING);
+            ringtone.play();   
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
         v.vibrate(pattern, 0);
-        player.start();
     
         AnimateImage acceptCallBtn = findViewById(R.id.ivAcceptCall);
         acceptCallBtn.setOnClickListener(new View.OnClickListener() {
@@ -147,8 +145,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             public void onClick(View view) {
                 try {
                     v.cancel();
-                    player.stop();
-                    player.prepareAsync();
+                    ringtone.stop();
                     acceptDialing();
                 } catch (Exception e) {
                     WritableMap params = Arguments.createMap();
@@ -164,24 +161,18 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             @Override
             public void onClick(View view) {
                 v.cancel();
-                player.stop();
-                player.prepareAsync();
+                ringtone.stop();
                 dismissDialing();
             }
         });
 
         if(checkIfCalling(IncomingCallModule.reactContext)){
-            player.stop();
+            ringtone.stop();
             v.cancel();
         }
         if(checkIfSilent(IncomingCallModule.reactContext)){
-            player.stop();
             v.cancel();
         }
-        if(checkIfVibrator(IncomingCallModule.reactContext)){
-            player.stop();
-        }
-
     }
 
     @Override
@@ -191,8 +182,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
     public static void dismissIncoming() {
         v.cancel();
-        player.stop();
-        player.prepareAsync();
+        ringtone.stop();
         fa.finish();
     }
 
@@ -277,15 +267,13 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 case KeyEvent.KEYCODE_VOLUME_UP:
                     if (action == KeyEvent.ACTION_UP) {
                         v.cancel();
-                        player.stop();
-                        player.prepareAsync();
+                        ringtone.stop();
                     }
                     return true;
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
                     if (action == KeyEvent.ACTION_UP) {
                         v.cancel();
-                        player.stop();
-                        player.prepareAsync();
+                        ringtone.stop();
                     }
                     return true;
             default:
