@@ -67,6 +67,8 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
                     }
                 }, timeout);
             }
+
+            
         }
     }
 
@@ -101,7 +103,7 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void openAppFromHeadlessMode(String uuid) {
+    public void openAppFromHeadlessMode(String uuid, String callerName) {
         Context context = getAppContext();
         String packageName = context.getApplicationContext().getPackageName();
         Intent focusIntent = context.getPackageManager().getLaunchIntentForPackage(packageName).cloneFilter();
@@ -118,6 +120,7 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
             final WritableMap response = new WritableNativeMap();
             response.putBoolean("isHeadless", true);
             response.putString("uuid", uuid);
+            response.putString("callerName",callerName);
 
             this.headlessExtras = response;
 
