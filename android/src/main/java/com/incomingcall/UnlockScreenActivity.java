@@ -30,6 +30,8 @@ import android.media.AudioManager;
 import android.media.RingtoneManager;
 import android.media.Ringtone;
 
+
+
 public class UnlockScreenActivity extends AppCompatActivity implements UnlockScreenActivityInterface {
 
     private static final String TAG = "MessagingService";
@@ -46,6 +48,7 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
 
     private static MediaPlayer player = MediaPlayer.create(IncomingCallModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
     private static Activity fa;
+
 
     private boolean checkIfCalling(Context context){
 
@@ -85,6 +88,8 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         super.onCreate(savedInstanceState);
 
         fa = this;
+
+        IncomingCallModule.setUnlockScreenActivityInstance(this);
 
         setContentView(R.layout.activity_call_incoming);
 
@@ -173,7 +178,30 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         if(checkIfSilent(IncomingCallModule.reactContext)){
             v.cancel();
         }
+    
+        processQueuedUpdates();
+    
     }
+
+     public void processQueuedUpdates() {
+        Log.d(TAG, "processQueuedUpdates display: ");
+        while (!IncomingCallModule.updateQueue.isEmpty()) {
+            final UpdateRequest request = IncomingCallModule.updateQueue.poll();
+
+            // run on UI thread
+            fa.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "processQueuedUpdates: updating display with name: " + request.getName());
+                    String name = request.getName();
+                    String uuid = request.getUuid();
+                    updateDisplay(uuid,name);
+                }
+            });
+
+        }
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -280,5 +308,24 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
                 return super.dispatchKeyEvent(event);
             }
         }
+
+    public void updateDisplay(String callUUID,String name) {
+        //log the incoming call
+        Log.d(TAG, "update display from activity: " + name + callUUID);
+
+        if(!uuid.equals(callUUID)){
+            return;
+        }
+        tvName.setText(name);
+    
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        IncomingCallModule.clearUnlockScreenActivityInstance();
+    }
+
+    
 
 }

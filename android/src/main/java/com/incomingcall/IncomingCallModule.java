@@ -16,6 +16,12 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
+import java.util.Queue;
+import java.util.LinkedList;
+
+
+
+
 
 public class IncomingCallModule extends ReactContextBaseJavaModule {
 
@@ -25,10 +31,27 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
     private static final String TAG = "RNIC:IncomingCallModule";
     private WritableMap headlessExtras;
 
+    private static UnlockScreenActivity unlockScreenActivityInstance;
+    public static Queue<UpdateRequest> updateQueue = new LinkedList<>(); // Queue to hold update requests
+
+
     public IncomingCallModule(ReactApplicationContext context) {
         super(context);
         reactContext = context;
         mainActivity = getCurrentActivity();
+    }
+
+    public static void setUnlockScreenActivityInstance(UnlockScreenActivity instance) {
+        unlockScreenActivityInstance = instance;
+    }
+
+    public static void clearUnlockScreenActivityInstance() {
+        unlockScreenActivityInstance = null;
+    }
+
+
+    public static void enqueueUpdate(String uuid,String name) {
+        updateQueue.offer(new UpdateRequest(name, uuid));
     }
 
     @Override
@@ -38,6 +61,10 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void display(String uuid, String name, String avatar, String info, int timeout, String accept, String decline) {
+
+           // log the incoming call
+        Log.d(TAG, "display: " + uuid + " " + name + " " + avatar + " " + info + " " + timeout + " " + accept + " " + decline); 
+
         if (UnlockScreenActivity.active) {
             return;
         }
@@ -57,6 +84,8 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
             
             i.putExtras(bundle);
             reactContext.startActivity(i);
+
+           
 
             if (timeout > 0) {
                 new Timer().schedule(new TimerTask() {          
@@ -140,4 +169,21 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
 
         promise.resolve(null);
     }
+
+    @ReactMethod
+    public void updateDisplay(final String uuid,final String name, String handle){
+
+        reactContext.getCurrentActivity().runOnUiThread(new Runnable() {
+            @Override
+             public void run() {
+                if (unlockScreenActivityInstance != null) {
+                    unlockScreenActivityInstance.updateDisplay(uuid,name);
+                } else {
+                    enqueueUpdate(uuid,name);
+                }
+       }});
+    
+    }
+
+   
 }
