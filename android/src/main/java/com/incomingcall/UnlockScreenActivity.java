@@ -188,17 +188,11 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
         while (!IncomingCallModule.updateQueue.isEmpty()) {
             final UpdateRequest request = IncomingCallModule.updateQueue.poll();
 
-            // run on UI thread
-            fa.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "processQueuedUpdates: updating display with name: " + request.getName());
-                    String name = request.getName();
-                    String uuid = request.getUuid();
-                    updateDisplay(uuid,name);
-                }
-            });
-
+                Log.d(TAG, "processQueuedUpdates: updating display with name: " + request.getName());
+                String name = request.getName();
+                String uuid = request.getUuid();
+                updateDisplay(uuid,name);
+        
         }
     }
 
@@ -309,15 +303,19 @@ public class UnlockScreenActivity extends AppCompatActivity implements UnlockScr
             }
         }
 
-    public void updateDisplay(String callUUID,String name) {
+    public void updateDisplay(String callUUID,final String name) {
         //log the incoming call
         Log.d(TAG, "update display from activity: " + name + callUUID);
-
         if(!uuid.equals(callUUID)){
             return;
         }
-        tvName.setText(name);
-    
+        // run on UI thread
+        fa.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                tvName.setText(name);
+            }
+        });        
     }
 
     @Override

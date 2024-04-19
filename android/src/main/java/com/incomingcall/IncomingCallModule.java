@@ -173,15 +173,11 @@ public class IncomingCallModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void updateDisplay(final String uuid,final String name, String handle){
 
-        reactContext.getCurrentActivity().runOnUiThread(new Runnable() {
-            @Override
-             public void run() {
-                if (unlockScreenActivityInstance != null) {
-                    unlockScreenActivityInstance.updateDisplay(uuid,name);
-                } else {
-                    enqueueUpdate(uuid,name);
-                }
-       }});
+        if (unlockScreenActivityInstance != null) {
+            unlockScreenActivityInstance.updateDisplay(uuid,name);
+        } else {
+            enqueueUpdate(uuid,name);
+        }
     
     }
 
