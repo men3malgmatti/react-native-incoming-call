@@ -65,26 +65,12 @@ repositories {
     }
     mavenCentral()
     google()
-
-    exclusiveContent {
-        // We get React Native's Android binaries exclusively through npm,
-        // from a local Maven repo inside node_modules/react-native/.
-        // (The use of exclusiveContent prevents looking elsewhere like Maven Central
-        // and potentially getting a wrong version.)
-        filter {
-            includeGroup "com.facebook.react"
-        }
-        forRepository {
-            maven {
-                url "$rootDir/../node_modules/react-native/android"
-            }
-        }
-    }
+    
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation 'com.facebook.react:react-native:+'  // From node_modules
+    implementation 'com.facebook.react:react-android'  // From node_modules
     implementation 'com.squareup.picasso:picasso:2.71828'
     // Add any other updated dependencies here
 }
