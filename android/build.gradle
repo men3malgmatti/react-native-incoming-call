@@ -70,12 +70,7 @@ repositories {
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation('com.facebook.react:react-android:0.75.3') {
-        // Specify the variant you want to use
-        attributes {
-            attribute(Bundling.BUNDLING_ATTRIBUTE, Bundling.EXTERNAL)
-        }
-    }
+    implementation('com.facebook.react:react-android:0.75.3') 
     implementation 'com.squareup.picasso:picasso:2.71828'
     // Add any other updated dependencies here
 }
