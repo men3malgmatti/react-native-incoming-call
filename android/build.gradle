@@ -73,7 +73,7 @@ dependencies {
     implementation('com.facebook.react:react-android:0.75.3') {
         // Specify the variant you want to use
         attributes {
-            attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+            attribute(Bundling.BUNDLING_ATTRIBUTE, 'external')
         }
     }
     implementation 'com.squareup.picasso:picasso:2.71828'
